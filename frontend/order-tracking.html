@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Track Your Order | Indo China – Family Restaurant</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥢</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body data-page="order">
+<div id="site-header"></div>
+
+<main class="section">
+  <div class="container" style="max-width:640px;">
+    <h1 style="font-size:2.2rem;">Track Your Order</h1>
+    <div class="panel" style="padding:var(--space-5);">
+      <div class="field"><label for="orderNumberInput">Order number</label><input id="orderNumberInput" placeholder="ICR-20261013-0001"></div>
+      <div class="field"><label for="mobileInput">Mobile number used for the order (for guest orders)</label><input id="mobileInput" placeholder="10-digit mobile"></div>
+      <button class="btn btn-primary btn-block" id="trackBtn">Track Order</button>
+      <p id="trackError" class="field-error" style="display:none;"></p>
+    </div>
+
+    <div id="orderResult" style="margin-top:var(--space-6);"></div>
+  </div>
+</main>
+
+<div id="site-footer"></div>
+<script src="/js/api.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/chrome.js"></script>
+<script>
+const STATUS_LABELS = {
+  placed: 'Order placed', confirmed: 'Confirmed', preparing: 'Preparing',
+  ready: 'Ready for pickup', out_for_delivery: 'Out for delivery',
+  delivered: 'Delivered', completed: 'Completed', cancelled: 'Cancelled'
+};
+
+async function track(orderNumber, mobile) {
+  const resultEl = document.getElementById('orderResult');
+  const errorEl = document.getElementById('trackError');
+  errorEl.style.display = 'none';
+  try {
+    const qs = mobile ? `?mobile=${encodeURIComponent(mobile)}` : '';
+    const { order } = await api.get(`/orders/${encodeURIComponent(orderNumber)}${qs}`);
+    resultEl.innerHTML = `
+      <div class="panel" style="padding:var(--space-5);">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 style="margin:0;">${order.order_number}</h3>
+          <span class="status-pill status-${order.status}">${STATUS_LABELS[order.status] || order.status}</span>
+        </div>
+        <p class="text-muted" style="margin-top:var(--space-2);">${order.fulfillment_type === 'delivery' ? 'Delivery to ' + (order.delivery_address || '') : order.fulfillment_type === 'pickup' ? 'Pickup' : 'Takeaway'}</p>
+        <hr class="divider">
+        <div>${order.items.map((it) => `
+          <div style="display:flex;justify-content:space-between;font-size:0.9rem;padding:4px 0;">
+            <span>${it.quantity} × ${it.item_name_snapshot}${it.variant_name_snapshot ? ` (${it.variant_name_snapshot})` : ''}</span>
+            <span>${formatInr(it.line_total_paise)}</span>
+          </div>`).join('')}
+        </div>
+        <hr class="divider">
+        <div style="display:flex;justify-content:space-between;font-size:1.1rem;"><strong>Total</strong><strong>${formatInr(order.total_paise)}</strong></div>
+        <p class="text-muted" style="font-size:0.85rem;margin-top:var(--space-2);">Payment: ${order.payment_method.toUpperCase()} · ${order.payment_status}</p>
+        <h4 style="margin-top:var(--space-6);">Status history</h4>
+        <ul style="list-style:none;padding:0;margin:0;">
+          ${order.statusHistory.map((h) => `<li style="font-size:0.85rem;color:var(--stone-400);padding:4px 0;">${new Date(h.created_at).toLocaleString('en-IN')} — ${STATUS_LABELS[h.status] || h.status}</li>`).join('')}
+        </ul>
+      </div>`;
+  } catch (err) {
+    errorEl.textContent = err.status === 404 ? 'No matching order found. Double-check the order number and mobile.' : err.message;
+    errorEl.style.display = 'block';
+    resultEl.innerHTML = '';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(location.search);
+  const presetOrder = params.get('order');
+  const presetMobile = params.get('mobile');
+  if (presetOrder) document.getElementById('orderNumberInput').value = presetOrder;
+  if (presetMobile) document.getElementById('mobileInput').value = presetMobile;
+  if (presetOrder) track(presetOrder, presetMobile);
+
+  document.getElementById('trackBtn').addEventListener('click', () => {
+    const num = document.getElementById('orderNumberInput').value.trim();
+    const mobile = document.getElementById('mobileInput').value.trim();
+    if (!num) { document.getElementById('trackError').textContent = 'Enter an order number.'; document.getElementById('trackError').style.display = 'block'; return; }
+    track(num, mobile);
+  });
+});
+</script>
+</body>
+</html>

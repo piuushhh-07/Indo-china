@@ -1,0 +1,35 @@
+{
+  "name": "indochina-restaurant",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ordering, reservation and admin platform for Indo China - Family Restaurant, Ambernath",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node scripts/migrate.js",
+    "db:check": "node scripts/check-db.js",
+    "seed": "node seeds/seed.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.2.0",
+    "express-session": "^1.18.0",
+    "connect-pg-simple": "^9.0.1",
+    "helmet": "^7.1.0",
+    "pg": "^8.11.5",
+    "razorpay": "^2.9.4",
+    "validator": "^13.11.0"
+  },
+  "devDependencies": {
+    "supertest": "^6.3.4"
+  }
+}

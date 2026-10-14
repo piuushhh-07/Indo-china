@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin | Indo China – Family Restaurant</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/design-system.css">
+<style>
+  body { background: var(--ink-900); }
+  .admin-shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .admin-sidebar { background: var(--ink-800); border-right: 1px solid var(--ink-600); padding: var(--space-5); }
+  .admin-sidebar h2 { font-size: 1.3rem; margin-bottom: var(--space-6); }
+  .admin-nav { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+  .admin-nav button { all: unset; cursor: pointer; padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); color: var(--stone-400); font-size: 0.9rem; width: 100%; }
+  .admin-nav button.active, .admin-nav button:hover { background: var(--ink-700); color: var(--cream-100); }
+  .admin-main { padding: var(--space-6); max-width: 1100px; }
+  .tab { display: none; }
+  .tab.active { display: block; }
+  .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: var(--space-4); margin-bottom: var(--space-6); }
+  .stat-card { padding: var(--space-5); }
+  .stat-card .value { font-family: var(--font-display); font-size: 2rem; color: var(--gold-300); }
+  .filters-row { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
+  .filters-row select, .filters-row input { width: auto; }
+</style>
+</head>
+<body>
+
+<div id="loginGate" class="panel" style="max-width:380px;margin:120px auto;padding:var(--space-6);">
+  <h2 style="margin-top:0;">Admin Login</h2>
+  <div class="field"><label for="gateMobile">Mobile number</label><input id="gateMobile"></div>
+  <div class="field"><label for="gatePassword">Password</label><input id="gatePassword" type="password"></div>
+  <button class="btn btn-primary btn-block" id="gateLoginBtn">Log In</button>
+  <p id="gateError" class="field-error" style="display:none;"></p>
+</div>
+
+<div class="admin-shell" id="adminShell" style="display:none;">
+  <nav class="admin-sidebar">
+    <h2>Indo China<br><span style="font-size:0.9rem;color:var(--gold-400);font-family:var(--font-body);">Admin</span></h2>
+    <ul class="admin-nav">
+      <li><button data-tab="overview" class="active">Overview</button></li>
+      <li><button data-tab="menu">Menu</button></li>
+      <li><button data-tab="reviews">Reviews</button></li>
+      <li><button data-tab="orders">Orders</button></li>
+      <li><button data-tab="reservations">Reservations</button></li>
+      <li><button data-tab="settings">Settings</button></li>
+    </ul>
+    <button class="btn btn-ghost btn-sm" style="margin-top:var(--space-7);width:100%;" id="adminLogout">Log Out</button>
+    <a href="/index.html" class="btn btn-ghost btn-sm" style="margin-top:var(--space-2);width:100%;display:block;text-align:center;text-decoration:none;">← Back to site</a>
+  </nav>
+
+  <main class="admin-main">
+    <section class="tab active" id="tab-overview">
+      <h1 style="font-size:1.8rem;">Overview</h1>
+      <div class="stat-cards" id="statCards"></div>
+      <h3>Popular Dishes</h3>
+      <table class="data-table"><thead><tr><th>Dish</th><th>Popularity score</th></tr></thead><tbody id="popularBody"></tbody></table>
+    </section>
+
+    <section class="tab" id="tab-menu">
+      <h1 style="font-size:1.8rem;">Menu Management</h1>
+      <p class="text-muted" style="font-size:0.88rem;">236 dishes were seeded from the owner's menu photos. Toggle availability, mark featured, or edit details. 22 items are flagged for review — fix their prices here before they go live for customers.</p>
+      <div class="filters-row">
+        <input id="menuSearch" placeholder="Search dishes…">
+        <select id="menuCategoryFilter"><option value="">All categories</option></select>
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--cream-100);"><input type="checkbox" id="menuFlaggedOnly" style="width:auto;"> Flagged only</label>
+      </div>
+      <div class="scroll-x"><table class="data-table"><thead><tr><th>Dish</th><th>Category</th><th>Variants</th><th>Inventory</th><th>Status</th><th>Actions</th></tr></thead><tbody id="menuBody"></tbody></table></div>
+    </section>
+
+    <section class="tab" id="tab-reviews">
+      <h1 style="font-size:1.8rem;">Review Approval</h1>
+      <p class="text-muted">Only reviews from customers with completed orders appear here. Approved reviews are shown publicly.</p>
+      <div class="scroll-x"><table class="data-table"><thead><tr><th>Dish / Order</th><th>Customer</th><th>Rating</th><th>Review</th><th>Submitted</th><th>Actions</th></tr></thead><tbody id="reviewsBody"></tbody></table></div>
+    </section>
+
+    <section class="tab" id="tab-orders">
+      <h1 style="font-size:1.8rem;">Orders</h1>
+      <div class="filters-row">
+        <select id="orderStatusFilter">
+          <option value="">All statuses</option>
+          <option value="placed">Placed</option><option value="confirmed">Confirmed</option>
+          <option value="preparing">Preparing</option><option value="ready">Ready</option>
+          <option value="out_for_delivery">Out for delivery</option><option value="delivered">Delivered</option>
+          <option value="completed">Completed</option><option value="cancelled">Cancelled</option>
+        </select>
+        <input id="orderSearch" placeholder="Order number or mobile">
+      </div>
+      <div class="scroll-x"><table class="data-table"><thead><tr><th>Order #</th><th>Customer</th><th>Status</th><th>Total</th><th>Payment</th><th>Placed</th><th>Action</th></tr></thead><tbody id="ordersBody"></tbody></table></div>
+    </section>
+
+    <section class="tab" id="tab-reservations">
+      <h1 style="font-size:1.8rem;">Reservations</h1>
+      <div class="filters-row">
+        <input type="date" id="resDateFilter">
+        <select id="resStatusFilter">
+          <option value="">All statuses</option>
+          <option value="pending">Pending</option><option value="confirmed">Confirmed</option>
+          <option value="rejected">Rejected</option><option value="cancelled">Cancelled</option><option value="completed">Completed</option>
+        </select>
+      </div>
+      <div class="scroll-x"><table class="data-table"><thead><tr><th>Code</th><th>Name</th><th>Date / Time</th><th>Guests</th><th>Status</th><th>Actions</th></tr></thead><tbody id="reservationsBody"></tbody></table></div>
+    </section>
+
+    <section class="tab" id="tab-settings">
+      <h1 style="font-size:1.8rem;">Restaurant Settings</h1>
+      <form id="settingsForm" class="panel" style="padding:var(--space-5);max-width:560px;">
+        <div class="field"><label for="setPhone">Phone number</label><input id="setPhone" placeholder="Not yet set — add the real number here"></div>
+        <div class="field"><label for="setAddress">Address</label><input id="setAddress"></div>
+        <div class="field"><label for="setMapsUrl">Google Maps URL</label><input id="setMapsUrl"></div>
+        <div class="field"><label for="setTax">Tax percent</label><input id="setTax" type="number" step="0.01"></div>
+        <div class="field"><label for="setDeliveryFee">Default delivery fee (₹)</label><input id="setDeliveryFee" type="number" step="1"></div>
+        <div class="field"><label for="setMinOrder">Default minimum order (₹)</label><input id="setMinOrder" type="number" step="1"></div>
+        <div class="field"><label for="setCapacity">Reservation seating capacity</label><input id="setCapacity" type="number" step="1"></div>
+        <div style="display:flex;gap:var(--space-5);flex-wrap:wrap;margin-bottom:var(--space-4);">
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;color:var(--cream-100);"><input type="checkbox" id="setCod" style="width:auto;"> Cash on Delivery enabled</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;color:var(--cream-100);"><input type="checkbox" id="setRazorpay" style="width:auto;"> Razorpay enabled</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;color:var(--cream-100);"><input type="checkbox" id="setMaintenance" style="width:auto;"> Maintenance mode</label>
+        </div>
+        <p class="field-hint">Enabling Razorpay here only works once RAZORPAY_KEY_ID / SECRET are set in the server's environment — see docs/DEPLOYMENT.md.</p>
+        <button type="submit" class="btn btn-primary">Save Settings</button>
+        <p id="settingsSaved" class="field-hint" style="display:none;color:var(--success-500);">Saved.</p>
+      </form>
+    </section>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/admin/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+/* ============================================================
+   Indo China — Family Restaurant — Design System
+   Palette: warm ivory, lemon, wood, charcoal and soft sage.
+   Type: Cormorant Garamond (display) + Manrope (UI/body).
+   ============================================================ */
+
+:root {
+  /* Color */
+  --ink-900: #F3F0E5;
+  --ink-800: #EAE5D6;
+  --ink-700: #FFFDF7;
+  --ink-600: #DDD6C5;
+  --crimson-600: #8C1F2B;
+  --crimson-500: #A42332;
+  --crimson-400: #C53544;
+  --gold-500: #936B43;
+  --gold-400: #936B43;
+  --gold-300: #252723;
+  --cream-100: #252723;
+  --cream-200: #45473F;
+  --stone-400: #62645B;
+  --stone-500: #77776C;
+  --success-500: #526448;
+  --danger-500: #C53544;
+
+  /* Type */
+  --font-display: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'DM Sans', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Spacing scale */
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.5rem; --space-6: 2rem; --space-7: 3rem; --space-8: 4.5rem; --space-9: 7rem;
+
+  --radius-sm: 5px; --radius-md: 12px; --radius-lg: 20px;
+  --max-content: 1180px;
+  --shadow-card: 0 14px 34px -24px rgba(46, 42, 30, 0.38);
+}
+
+* , *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+body {
+  margin: 0;
+  background: var(--ink-900);
+  color: var(--cream-100);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.12;
+  margin: 0 0 var(--space-4);
+  color: var(--cream-100);
+  letter-spacing: 0.002em;
+}
+h1 { font-size: clamp(2.4rem, 5vw, 4rem); }
+h2 { font-size: clamp(1.8rem, 3.2vw, 2.6rem); }
+h3 { font-size: clamp(1.3rem, 2vw, 1.6rem); }
+p { margin: 0 0 var(--space-4); max-width: 62ch; color: var(--cream-200); }
+a { color: inherit; }
+img { max-width: 100%; display: block; }
+
+.container { max-width: var(--max-content); margin: 0 auto; padding: 0 var(--space-5); }
+@media (max-width: 640px) { .container { padding: 0 var(--space-4); } }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold-400);
+  outline-offset: 2px;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  font-family: var(--font-body); font-weight: 600; font-size: 0.95rem;
+  padding: 0.85rem 1.6rem; border-radius: var(--radius-sm); border: 1px solid transparent;
+  cursor: pointer; text-decoration: none; transition: transform 120ms ease, background 150ms ease, border-color 150ms ease;
+  min-height: 48px; /* touch target */
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--gold-500); color: #fffdf7; }
+.btn-primary:hover { background: #765333; }
+.btn-outline { background: transparent; color: var(--gold-300); border-color: var(--gold-500); }
+.btn-outline:hover { background: rgba(147, 107, 67, 0.08); }
+.btn-ghost { background: transparent; color: var(--cream-200); border-color: var(--ink-600); }
+.btn-ghost:hover { border-color: var(--stone-500); }
+.btn-sm { padding: 0.5rem 1rem; font-size: 0.85rem; min-height: 36px; }
+.btn-block { width: 100%; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ---------- Cards / panels ---------- */
+.panel {
+  background: var(--ink-700);
+  border: 1px solid var(--ink-600);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+/* ---------- Forms ---------- */
+label { display: block; font-size: 0.85rem; color: var(--stone-400); margin-bottom: var(--space-2); }
+.field { margin-bottom: var(--space-4); }
+input, select, textarea {
+  width: 100%; background: var(--ink-800); border: 1px solid var(--ink-600);
+  color: var(--cream-100); padding: 0.75rem 0.9rem; border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 0.95rem;
+}
+input::placeholder, textarea::placeholder { color: var(--stone-500); }
+input:focus, select:focus, textarea:focus { border-color: var(--gold-500); }
+.field-error { color: var(--danger-500); font-size: 0.82rem; margin-top: var(--space-2); }
+.field-hint { color: var(--stone-500); font-size: 0.82rem; margin-top: var(--space-2); }
+fieldset { border: none; padding: 0; margin: 0; }
+
+/* ---------- Badges ---------- */
+.badge { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.78rem; padding: 0.15rem 0.55rem; border-radius: 99px; }
+.badge-veg { color: #6FBF78; border: 1px solid #3C6B43; }
+.badge-nonveg { color: #D97B6B; border: 1px solid #7A3A32; }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.dot-veg { background: #6FBF78; }
+.dot-nonveg { background: #C53544; }
+
+/* ---------- Utility ---------- */
+.eyebrow { color: var(--gold-400); font-size: 0.85rem; letter-spacing: 0.02em; margin-bottom: var(--space-3); }
+.divider { border: none; border-top: 1px solid var(--ink-600); margin: var(--space-6) 0; }
+.section { padding: var(--space-8) 0; }
+@media (max-width: 640px) { .section { padding: var(--space-7) 0; } }
+.text-muted { color: var(--stone-400); }
+.skeleton { background: linear-gradient(90deg, var(--ink-700) 25%, var(--ink-600) 37%, var(--ink-700) 63%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; border-radius: var(--radius-sm); }
+@keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+.empty-state { text-align: center; padding: var(--space-8) var(--space-4); color: var(--stone-400); }
+
+.toast {
+  position: fixed; bottom: var(--space-5); left: 50%; transform: translateX(-50%);
+  background: var(--ink-700); border: 1px solid var(--gold-500); color: var(--cream-100);
+  padding: 0.8rem 1.3rem; border-radius: var(--radius-md); font-size: 0.9rem; z-index: 200;
+  box-shadow: var(--shadow-card);
+}
+
+table.data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.data-table th { text-align: left; color: var(--stone-400); font-weight: 600; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--ink-600); }
+.data-table td { padding: 0.7rem 0.8rem; border-bottom: 1px solid var(--ink-700); }
+
+/* ---------- Scrollable overflow containers (tables etc.) ---------- */
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout | Indo China – Family Restaurant</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥢</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body data-page="checkout">
+<div id="site-header"></div>
+
+<main class="section">
+  <div class="container" style="max-width:980px;">
+    <h1 style="font-size:2.2rem;">Checkout</h1>
+    <div id="emptyNotice" style="display:none;" class="empty-state panel">Your cart is empty. <a href="/menu.html">Go to the menu →</a></div>
+
+    <div id="checkoutForm" class="two-col" style="align-items:start;">
+      <div>
+        <div class="panel" style="padding:var(--space-5);margin-bottom:var(--space-5);">
+          <h3 style="margin-top:0;">How would you like it?</h3>
+          <div class="field" style="display:flex;gap:var(--space-3);">
+            <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;color:var(--cream-100);"><input type="radio" name="fulfillment" value="delivery" checked style="width:auto;"> Delivery</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;color:var(--cream-100);"><input type="radio" name="fulfillment" value="takeaway" style="width:auto;"> Takeaway</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;color:var(--cream-100);"><input type="radio" name="fulfillment" value="pickup" style="width:auto;"> Pickup</label>
+          </div>
+
+          <div id="deliveryFields">
+            <div class="field"><label for="addrLine1">Delivery address</label><input id="addrLine1" placeholder="Flat / building, street"></div>
+            <div class="field"><label for="addrLandmark">Landmark</label><input id="addrLandmark" placeholder="Near…"></div>
+            <div class="field"><label for="addrLocality">Locality</label><input id="addrLocality" placeholder="e.g. Kansai Section"></div>
+            <div class="field"><label for="addrPincode">Pincode</label><input id="addrPincode" placeholder="421501"></div>
+            <div class="field"><label for="addrInstructions">Delivery instructions (optional)</label><textarea id="addrInstructions" rows="2"></textarea></div>
+          </div>
+        </div>
+
+        <div class="panel" style="padding:var(--space-5);margin-bottom:var(--space-5);">
+          <h3 style="margin-top:0;">Your details</h3>
+          <div id="guestFields">
+            <div class="field"><label for="guestName">Full name</label><input id="guestName" required></div>
+            <div class="field"><label for="guestMobile">Mobile number</label><input id="guestMobile" type="tel" placeholder="10-digit mobile" required></div>
+            <div class="field"><label for="guestEmail">Email (optional)</label><input id="guestEmail" type="email"></div>
+          </div>
+          <p id="loggedInNotice" style="display:none;" class="text-muted">Ordering as <strong id="loggedInName"></strong>.</p>
+        </div>
+
+        <div class="panel" style="padding:var(--space-5);">
+          <h3 style="margin-top:0;">Payment</h3>
+          <div class="field" style="display:flex;flex-direction:column;gap:var(--space-3);">
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.92rem;color:var(--cream-100);"><input type="radio" name="payment" value="cod" checked style="width:auto;"> Cash on Delivery</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.92rem;color:var(--cream-100);"><input type="radio" name="payment" value="razorpay" id="razorpayOption" style="width:auto;"> Pay online (Razorpay)</label>
+            <p id="razorpayNotice" class="field-hint"></p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel" style="padding:var(--space-5);position:sticky;top:90px;">
+          <h3 style="margin-top:0;">Order Summary</h3>
+          <div id="summaryLines"></div>
+          <div class="field" style="margin-top:var(--space-4);">
+            <label for="couponInput">Coupon code</label>
+            <div style="display:flex;gap:var(--space-2);">
+              <input id="couponInput" placeholder="e.g. WELCOME10">
+              <button class="btn btn-outline btn-sm" id="applyCoupon">Apply</button>
+            </div>
+            <p id="couponMsg" class="field-hint"></p>
+          </div>
+          <hr class="divider" style="margin:var(--space-4) 0;">
+          <div id="totalsBlock" style="font-size:0.92rem;">
+            <div style="display:flex;justify-content:space-between;"><span class="text-muted">Subtotal</span><span id="sumSubtotal">—</span></div>
+            <div style="display:flex;justify-content:space-between;"><span class="text-muted">Discount</span><span id="sumDiscount">—</span></div>
+            <div style="display:flex;justify-content:space-between;"><span class="text-muted">Delivery fee</span><span id="sumDelivery">—</span></div>
+            <div style="display:flex;justify-content:space-between;"><span class="text-muted">Tax</span><span id="sumTax">—</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:1.15rem;margin-top:var(--space-3);"><strong>Total</strong><strong id="sumTotal">—</strong></div>
+          </div>
+          <button class="btn btn-primary btn-block" id="placeOrderBtn" style="margin-top:var(--space-5);">Place Order</button>
+          <p id="orderError" class="field-error" style="display:none;"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="site-footer"></div>
+<script src="/js/api.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/chrome.js"></script>
+<script>
+let currentUser = null;
+let lastPricing = null;
+let settingsCache = null;
+
+function cartLinesPayload() {
+  return readCart().map((l) => ({ variantId: l.variantId, quantity: l.quantity, addonIds: l.addonIds || [] }));
+}
+
+async function refreshSummary() {
+  const lines = readCart();
+  document.getElementById('summaryLines').innerHTML = lines.map((l) => `
+    <div style="display:flex;justify-content:space-between;font-size:0.9rem;padding:4px 0;">
+      <span>${l.quantity} × ${l.itemName}${l.variantName ? ` (${l.variantName})` : ''}</span>
+      <span>${formatInr(l.unitPricePaise * l.quantity)}</span>
+    </div>
+  `).join('');
+
+  if (lines.length === 0) return;
+
+  const fulfillmentType = document.querySelector('input[name="fulfillment"]:checked').value;
+  const couponCode = document.getElementById('couponInput').value.trim() || undefined;
+  const deliveryPincode = fulfillmentType === 'delivery' ? document.getElementById('addrPincode').value.trim() : undefined;
+
+  try {
+    const { pricing, coupon } = await api.post('/cart/validate', { lines: cartLinesPayload(), fulfillmentType, deliveryPincode, couponCode });
+    lastPricing = pricing;
+    document.getElementById('sumSubtotal').textContent = formatInr(pricing.subtotalPaise);
+    document.getElementById('sumDiscount').textContent = pricing.discountPaise ? `− ${formatInr(pricing.discountPaise)}` : '₹0.00';
+    document.getElementById('sumDelivery').textContent = formatInr(pricing.deliveryFeePaise);
+    document.getElementById('sumTax').textContent = formatInr(pricing.taxPaise);
+    document.getElementById('sumTotal').textContent = formatInr(pricing.totalPaise);
+    document.getElementById('couponMsg').textContent = coupon ? `"${coupon.code}" applied — you saved ${formatInr(coupon.discountPaise)}.` : '';
+    document.getElementById('orderError').style.display = 'none';
+  } catch (err) {
+    document.getElementById('couponMsg').textContent = couponCode ? err.message : '';
+    if (!couponCode) {
+      document.getElementById('orderError').textContent = err.message;
+      document.getElementById('orderError').style.display = 'block';
+    }
+  }
+}
+
+async function placeOrder() {
+  const lines = readCart();
+  if (lines.length === 0) return;
+  const fulfillmentType = document.querySelector('input[name="fulfillment"]:checked').value;
+  const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+  const errorEl = document.getElementById('orderError');
+  errorEl.style.display = 'none';
+
+  const body = {
+    lines: cartLinesPayload(),
+    fulfillmentType,
+    paymentMethod,
+    couponCode: document.getElementById('couponInput').value.trim() || undefined,
+    idempotencyKey: getOrCreateIdempotencyKey()
+  };
+  if (fulfillmentType === 'delivery') {
+    body.address = {
+      line1: document.getElementById('addrLine1').value.trim(),
+      landmark: document.getElementById('addrLandmark').value.trim(),
+      locality: document.getElementById('addrLocality').value.trim(),
+      pincode: document.getElementById('addrPincode').value.trim(),
+      instructions: document.getElementById('addrInstructions').value.trim(),
+      mobile: currentUser ? currentUser.mobile : document.getElementById('guestMobile').value.trim()
+    };
+  }
+  if (!currentUser) {
+    body.guest = {
+      name: document.getElementById('guestName').value.trim(),
+      mobile: document.getElementById('guestMobile').value.trim(),
+      email: document.getElementById('guestEmail').value.trim() || undefined
+    };
+  }
+
+  const btn = document.getElementById('placeOrderBtn');
+  btn.disabled = true;
+  btn.textContent = 'Placing your order…';
+  try {
+    const { order, razorpayOrder, razorpayKeyId } = await api.post('/orders/checkout', body);
+
+    if (paymentMethod === 'razorpay' && razorpayOrder) {
+      await payWithRazorpay(order, razorpayOrder, razorpayKeyId);
+    } else {
+      clearCart();
+      clearIdempotencyKey();
+      location.href = `/order-tracking.html?order=${order.order_number}&mobile=${body.guest ? body.guest.mobile : currentUser.mobile}`;
+    }
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Place Order';
+  }
+}
+
+function payWithRazorpay(order, razorpayOrder, keyId) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => {
+      const rzp = new Razorpay({
+        key: keyId,
+        amount: razorpayOrder.amount,
+        currency: 'INR',
+        name: 'Indo China – Family Restaurant',
+        description: `Order ${order.order_number}`,
+        order_id: razorpayOrder.id,
+        handler: async (response) => {
+          try {
+            await api.post('/payments/verify', {
+              orderNumber: order.order_number,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature
+            });
+            clearCart();
+            clearIdempotencyKey();
+            location.href = `/order-tracking.html?order=${order.order_number}`;
+            resolve();
+          } catch (err) {
+            document.getElementById('orderError').textContent = 'Payment went through but verification failed — please contact the restaurant with your order number ' + order.order_number + '.';
+            document.getElementById('orderError').style.display = 'block';
+            reject(err);
+          }
+        },
+        modal: { ondismiss: () => { document.getElementById('placeOrderBtn').disabled = false; document.getElementById('placeOrderBtn').textContent = 'Place Order'; } },
+        theme: { color: '#A42332' }
+      });
+      rzp.open();
+    };
+    document.body.appendChild(script);
+  });
+}
+
+function getOrCreateIdempotencyKey() {
+  let key = sessionStorage.getItem('ics_checkout_key');
+  if (!key) {
+    key = `ck_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    sessionStorage.setItem('ics_checkout_key', key);
+  }
+  return key;
+}
+function clearIdempotencyKey() { sessionStorage.removeItem('ics_checkout_key'); }
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (readCart().length === 0) {
+    document.getElementById('emptyNotice').style.display = 'block';
+    document.getElementById('checkoutForm').style.display = 'none';
+    return;
+  }
+
+  try {
+    const { user } = await api.get('/auth/me');
+    if (user) {
+      currentUser = user;
+      document.getElementById('guestFields').style.display = 'none';
+      document.getElementById('loggedInNotice').style.display = 'block';
+      document.getElementById('loggedInName').textContent = user.name;
+    }
+  } catch { /* guest checkout is fine */ }
+
+  try {
+    settingsCache = (await api.get('/settings')).settings;
+    const razorpayRadio = document.getElementById('razorpayOption');
+    const notice = document.getElementById('razorpayNotice');
+    if (!settingsCache.razorpay_enabled) {
+      razorpayRadio.disabled = true;
+      notice.textContent = 'Online payment isn\u2019t configured yet — Cash on Delivery is available.';
+    }
+    if (!settingsCache.cod_enabled) {
+      document.querySelector('input[name="payment"][value="cod"]').disabled = true;
+    }
+  } catch { /* defaults stay as-is */ }
+
+  document.querySelectorAll('input[name="fulfillment"]').forEach((r) => r.addEventListener('change', () => {
+    document.getElementById('deliveryFields').style.display = r.closest('div').querySelector('[value="delivery"]:checked') ? 'block' : 'none';
+    refreshSummary();
+  }));
+  document.getElementById('applyCoupon').addEventListener('click', refreshSummary);
+  document.getElementById('addrPincode').addEventListener('change', refreshSummary);
+  document.getElementById('placeOrderBtn').addEventListener('click', placeOrder);
+
+  refreshSummary();
+});
+</script>
+</body>
+</html>

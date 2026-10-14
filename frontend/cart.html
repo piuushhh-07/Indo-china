@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Cart | Indo China – Family Restaurant</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥢</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body data-page="menu">
+<div id="site-header"></div>
+
+<main class="section">
+  <div class="container" style="max-width:760px;">
+    <h1 style="font-size:2.2rem;">Your Cart</h1>
+    <div id="cartBody"></div>
+    <div class="panel" style="padding:var(--space-5);margin-top:var(--space-5);">
+      <div style="display:flex;justify-content:space-between;font-size:1.1rem;">
+        <span>Estimated subtotal</span><strong id="subtotalOut">₹0.00</strong>
+      </div>
+      <p class="field-hint">Taxes, delivery fee and coupon are calculated on the checkout page, from the database — not from this estimate.</p>
+      <a href="/checkout.html" class="btn btn-primary btn-block" id="checkoutBtn">Proceed to Checkout</a>
+      <a href="/menu.html" class="btn btn-ghost btn-block" style="margin-top:var(--space-3);">Continue browsing the menu</a>
+    </div>
+  </div>
+</main>
+
+<div id="site-footer"></div>
+<script src="/js/api.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/chrome.js"></script>
+<script>
+function render() {
+  const lines = readCart();
+  const body = document.getElementById('cartBody');
+  if (lines.length === 0) {
+    body.innerHTML = '<div class="empty-state panel" style="padding:var(--space-7);">Your cart is empty. <a href="/menu.html">Browse the menu →</a></div>';
+    document.getElementById('checkoutBtn').classList.add('btn-disabled');
+    document.getElementById('checkoutBtn').style.pointerEvents = 'none';
+    document.getElementById('checkoutBtn').style.opacity = '0.5';
+  } else {
+    body.innerHTML = `<div class="panel" style="padding:0 var(--space-5);">` + lines.map((l, i) => `
+      <div class="cart-line" style="align-items:center;">
+        <div>
+          <div style="font-weight:600;">${l.itemName}${l.variantName ? ` <span class="text-muted" style="font-weight:400;">(${l.variantName})</span>` : ''}</div>
+          <div class="text-muted" style="font-size:0.85rem;">${formatInr(l.unitPricePaise)} each</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:var(--space-4);">
+          <div class="qty-row">
+            <button class="qty-btn" data-dec="${i}">−</button>
+            <span>${l.quantity}</span>
+            <button class="qty-btn" data-inc="${i}">+</button>
+          </div>
+          <strong>${formatInr(l.unitPricePaise * l.quantity)}</strong>
+          <button class="btn btn-ghost btn-sm" data-remove="${i}" aria-label="Remove">✕</button>
+        </div>
+      </div>
+    `).join('') + `</div>`;
+
+    body.querySelectorAll('[data-inc]').forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.inc; updateQuantity(i, readCart()[i].quantity + 1); render(); }));
+    body.querySelectorAll('[data-dec]').forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.dec; updateQuantity(i, readCart()[i].quantity - 1); render(); }));
+    body.querySelectorAll('[data-remove]').forEach((b) => b.addEventListener('click', () => { removeLine(+b.dataset.remove); render(); }));
+  }
+  document.getElementById('subtotalOut').textContent = formatInr(cartClientSubtotal());
+}
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

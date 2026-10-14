@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Account | Indo China – Family Restaurant</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥢</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body data-page="account">
+<div id="site-header"></div>
+
+<main class="section">
+  <div class="container" style="max-width:760px;">
+    <div id="guestNotice" style="display:none;" class="empty-state panel">
+      <p>You're not logged in. <a href="/login.html">Log in</a> or <a href="/register.html">create an account</a> to see your order history.</p>
+    </div>
+
+    <div id="accountBody" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h1 style="font-size:2rem;" id="welcomeHeading">My Account</h1>
+        <button class="btn btn-ghost btn-sm" id="logoutBtn">Log Out</button>
+      </div>
+
+      <h3>Order History</h3>
+      <div id="orderHistory"><p class="text-muted">Loading…</p></div>
+
+      <h3 style="margin-top:var(--space-7);">Write a verified-purchase review</h3>
+      <form id="reviewForm" class="panel" style="padding:var(--space-5);margin-bottom:var(--space-4);">
+        <div class="field"><label for="reviewItem">Completed order item</label><select id="reviewItem" required></select></div>
+        <div class="field"><label for="reviewRating">Rating</label>
+          <select id="reviewRating" required><option value="5">5 — Excellent</option><option value="4">4 — Very good</option><option value="3">3 — Good</option><option value="2">2 — Fair</option><option value="1">1 — Poor</option></select>
+        </div>
+        <div class="field"><label for="reviewText">Your review</label><textarea id="reviewText" minlength="3" maxlength="1000" required></textarea></div>
+        <button type="submit" class="btn btn-outline">Submit for approval</button>
+        <p id="reviewMessage" class="field-hint" role="status"></p>
+      </form>
+      <div id="myReviews" class="text-muted"></div>
+
+      <h3 style="margin-top:var(--space-7);">Saved Addresses</h3>
+      <div id="addressList"></div>
+      <form id="addAddressForm" class="panel" style="padding:var(--space-5);margin-top:var(--space-4);">
+        <h4 style="margin-top:0;">Add an address</h4>
+        <div class="field"><label for="addrLine1">Address</label><input id="addrLine1" required></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+          <div class="field"><label for="addrLocality">Locality</label><input id="addrLocality"></div>
+          <div class="field"><label for="addrPincode">Pincode</label><input id="addrPincode"></div>
+        </div>
+        <button type="submit" class="btn btn-outline">Save Address</button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<div id="site-footer"></div>
+<script src="/js/api.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/chrome.js"></script>
+<script>
+const STATUS_LABELS = { placed: 'Placed', confirmed: 'Confirmed', preparing: 'Preparing', ready: 'Ready', out_for_delivery: 'Out for delivery', delivered: 'Delivered', completed: 'Completed', cancelled: 'Cancelled' };
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char]);
+}
+
+async function loadAccount() {
+  let user;
+  try {
+    ({ user } = await api.get('/auth/me'));
+  } catch { user = null; }
+
+  if (!user) {
+    document.getElementById('guestNotice').style.display = 'block';
+    return;
+  }
+  document.getElementById('accountBody').style.display = 'block';
+  document.getElementById('welcomeHeading').textContent = `Welcome, ${user.name.split(' ')[0]}`;
+
+  try {
+    const { orders } = await api.get('/orders/mine');
+    document.getElementById('orderHistory').innerHTML = orders.length === 0
+      ? '<p class="text-muted">No orders yet. <a href="/menu.html">Browse the menu →</a></p>'
+      : orders.map((o) => `
+        <a href="/order-tracking.html?order=${o.order_number}" class="panel" style="display:flex;justify-content:space-between;padding:var(--space-4);margin-bottom:var(--space-3);text-decoration:none;">
+          <div><strong>${o.order_number}</strong><div class="text-muted" style="font-size:0.85rem;">${new Date(o.created_at).toLocaleDateString('en-IN')}</div></div>
+          <div style="text-align:right;"><span class="status-pill status-${o.status}">${STATUS_LABELS[o.status] || o.status}</span><div style="margin-top:4px;">${formatInr(o.total_paise)}</div></div>
+        </a>
+      `).join('');
+
+    const { reviews } = await api.get('/reviews/mine');
+    const reviewedItemIds = new Set(reviews.map((review) => review.menu_item_id));
+    const eligibleItems = new Map();
+    for (const order of orders) {
+      if (order.status !== 'completed') continue;
+      for (const item of order.items || []) {
+        if (item.menu_item_id && !reviewedItemIds.has(item.menu_item_id) && !eligibleItems.has(item.menu_item_id)) {
+          eligibleItems.set(item.menu_item_id, { orderId: order.id, name: item.item_name, itemId: item.menu_item_id });
+        }
+      }
+    }
+    const reviewItem = document.getElementById('reviewItem');
+    reviewItem.innerHTML = '<option value="">Choose an item</option>' + Array.from(eligibleItems.values())
+      .map((item) => `<option value="${item.itemId}" data-order="${item.orderId}">${escapeHtml(item.name)}</option>`).join('');
+    document.getElementById('reviewForm').style.display = eligibleItems.size ? 'block' : 'none';
+    document.getElementById('myReviews').textContent = reviews.length
+      ? `Your reviews: ${reviews.map((review) => `${review.item_name} (${review.status})`).join(' · ')}`
+      : 'Complete an order to leave a verified review.';
+  } catch { document.getElementById('orderHistory').innerHTML = '<p class="text-muted">Could not load orders.</p>'; }
+
+  document.getElementById('reviewForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const itemOption = document.getElementById('reviewItem').selectedOptions[0];
+    const message = document.getElementById('reviewMessage');
+    try {
+      await api.post('/reviews', {
+        orderId: itemOption.dataset.order,
+        menuItemId: itemOption.value,
+        rating: Number(document.getElementById('reviewRating').value),
+        reviewText: document.getElementById('reviewText').value.trim()
+      });
+      message.textContent = 'Thank you. Your review is awaiting admin approval.';
+      document.getElementById('reviewForm').reset();
+      document.getElementById('reviewForm').style.display = 'none';
+      document.getElementById('myReviews').textContent = 'Your review is awaiting admin approval.';
+    } catch (error) {
+      message.textContent = error.message;
+    }
+  });
+
+  async function loadAddresses() {
+    try {
+      const { addresses } = await api.get('/auth/addresses');
+      document.getElementById('addressList').innerHTML = addresses.length === 0
+        ? '<p class="text-muted">No saved addresses yet.</p>'
+        : addresses.map((a) => `<div class="panel" style="padding:var(--space-4);margin-bottom:var(--space-3);"><strong>${a.label}</strong><div class="text-muted" style="font-size:0.88rem;">${a.line1}${a.locality ? ', ' + a.locality : ''}${a.pincode ? ' - ' + a.pincode : ''}</div></div>`).join('');
+    } catch { /* address list stays empty on failure */ }
+  }
+  loadAddresses();
+
+  document.getElementById('addAddressForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await api.post('/auth/addresses', {
+      line1: document.getElementById('addrLine1').value.trim(),
+      locality: document.getElementById('addrLocality').value.trim(),
+      pincode: document.getElementById('addrPincode').value.trim()
+    });
+    e.target.reset();
+    loadAddresses();
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await api.post('/auth/logout');
+    location.href = '/index.html';
+  });
+}
+document.addEventListener('DOMContentLoaded', loadAccount);
+</script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F3F0E5">
+<title>Our Menu | Indo China – Family Restaurant</title>
+<meta name="description" content="Explore the Indo China menu: comforting Indo-Chinese classics, tandoor favourites, momos, rice and noodles in Ambernath.">
+<link rel="icon" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body data-page="menu">
+<div id="site-header"></div>
+
+<main>
+  <section class="menu-hero">
+    <div class="container menu-hero-inner">
+      <div>
+        <p class="eyebrow"><span class="eyebrow-dot"></span> Fresh from our kitchen</p>
+        <h1>A little something<br><em>for every craving.</em></h1>
+        <p>Take a look around, find your favourite, and let us make it fresh for you.</p>
+        <a href="#menuBrowser" class="btn btn-primary">Find your favourite <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="menu-hero-photo"><img src="/assets/interior3.png" alt="A warm seat awaits inside Indo China" fetchpriority="high"><span>Indo China · Ambernath</span></div>
+    </div>
+  </section>
+
+  <section class="section menu-browser-section" id="menuBrowser">
+    <div class="container">
+      <div class="menu-intro">
+        <div><p class="eyebrow">The good stuff</p><h2>What sounds good?</h2></div>
+        <p>Filter the menu, pick a plate, and add it to your bag. Prices shown are per serving.</p>
+      </div>
+      <div class="menu-controls">
+        <label class="menu-search"><span class="visually-hidden">Search menu</span><span aria-hidden="true">⌕</span><input type="search" id="searchInput" placeholder="Search dishes…" autocomplete="off"></label>
+        <label class="menu-select-label"><span class="visually-hidden">Sort menu</span><select id="sortSelect" aria-label="Sort menu">
+          <option value="">Most popular</option><option value="name">Name A–Z</option>
+          <option value="price_asc">Price: low to high</option><option value="price_desc">Price: high to low</option>
+        </select></label>
+      </div>
+      <div class="menu-filters" id="catNav" role="group" aria-label="Filter by menu category">
+        <button type="button" class="menu-filter active" data-category="">All favourites</button>
+      </div>
+      <p class="menu-result-count" id="menuResultCount" aria-live="polite"></p>
+      <div id="dishList" class="menu-card-grid" aria-live="polite">
+        <div class="menu-loading"><span class="loader"></span> Bringing the menu to your table…</div>
+      </div>
+      <p class="menu-footnote">Some menu items have prices or options being confirmed. Please ask our team when ordering.</p>
+    </div>
+  </section>
+
+  <section class="menu-cta">
+    <div class="container menu-cta-inner">
+      <div><p class="eyebrow">Prefer a table?</p><h2>We saved you a seat.</h2><p>Make an evening of it at Indo China, Shivaji Road, Ambernath.</p></div>
+      <a href="/reservations.html" class="btn btn-light-outline">Plan your visit <span aria-hidden="true">↗</span></a>
+    </div>
+  </section>
+</main>
+
+<div id="site-footer"></div>
+<script src="/js/api.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/chrome.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+let categories = [];
+let activeCategory = params.get('category') || '';
+const MENU_PHOTOS = [
+  'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=640&q=80',
+  'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=640&q=80',
+  'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=640&q=80',
+  'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=640&q=80'
+];
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char]);
+}
+
+function renderCategoryFilters() {
+  const nav = document.getElementById('catNav');
+  nav.innerHTML = `<button type="button" class="menu-filter${activeCategory ? '' : ' active'}" data-category="">All favourites</button>` +
+    categories.map((category) => `<button type="button" class="menu-filter${activeCategory === category.slug ? ' active' : ''}" data-category="${escapeHtml(category.slug)}">${escapeHtml(category.name)}</button>`).join('');
+  nav.querySelectorAll('[data-category]').forEach((button) => button.addEventListener('click', () => {
+    activeCategory = button.dataset.category;
+    params.delete('category');
+    if (activeCategory) params.set('category', activeCategory);
+    history.replaceState(null, '', `${location.pathname}${params.size ? `?${params}` : ''}#menuBrowser`);
+    renderCategoryFilters();
+    loadDishes();
+  }));
+}
+
+function renderDish(item, index) {
+  const variants = item.variants.filter((variant) => variant.is_available && (variant.stock_quantity === null || variant.stock_quantity > 0));
+  const image = MENU_PHOTOS[index % MENU_PHOTOS.length];
+  const rating = item.review_count ? `<span class="dish-rating" aria-label="Rated ${item.average_rating} out of 5">★ ${item.average_rating} <small>(${item.review_count})</small></span>` : '';
+  if (!variants.length) {
+    return `<article class="menu-card">
+      <div class="menu-card-image"><img src="${image}" alt="${escapeHtml(item.name)} — serving suggestion" loading="lazy"><span class="menu-image-label">${item.is_vegetarian ? 'VEGETARIAN' : 'FROM OUR KITCHEN'}</span></div>
+      <div class="menu-card-body"><div class="menu-card-meta">${escapeHtml(item.category_name)} ${rating}</div><h3>${escapeHtml(item.name)}</h3>
+        <div class="menu-card-footer"><span>${item.variants.length ? 'Currently unavailable' : 'Ask us for today’s price'}</span><button class="menu-add-btn" disabled>Unavailable</button></div>
+      </div>
+    </article>`;
+  }
+  return `<article class="menu-card">
+    <div class="menu-card-image"><img src="${image}" alt="${escapeHtml(item.name)} — serving suggestion" loading="lazy"><span class="menu-image-label">${item.is_vegetarian ? 'VEGETARIAN' : 'FROM OUR KITCHEN'}</span></div>
+    <div class="menu-card-body">
+      <div class="menu-card-meta">${escapeHtml(item.category_name)} ${rating}</div>
+      <h3>${escapeHtml(item.name)}</h3>
+      ${item.description ? `<p class="menu-card-description">${escapeHtml(item.description)}</p>` : ''}
+      <div class="menu-card-options">
+        <label class="visually-hidden" for="variant-${item.id}">Choose ${escapeHtml(item.name)} option</label>
+        <select id="variant-${item.id}" data-variant-select="${item.id}">
+          ${variants.map((variant) => `<option value="${variant.id}" data-price="${variant.price_paise}" data-name="${escapeHtml(variant.name)}">${escapeHtml(variant.name)} · ${formatInr(variant.price_paise)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="menu-card-footer"><span>From <strong>${formatInr(variants[0].price_paise)}</strong></span>
+        <button class="menu-add-btn" type="button" data-add-dish="${item.id}">Add to order <span aria-hidden="true">+</span></button>
+      </div>
+    </div>
+  </article>`;
+}
+
+async function loadDishes() {
+  const query = new URLSearchParams();
+  if (activeCategory) query.set('category', activeCategory);
+  const search = document.getElementById('searchInput').value.trim();
+  if (search) query.set('search', search);
+  const sort = document.getElementById('sortSelect').value;
+  if (sort) query.set('sort', sort);
+  const list = document.getElementById('dishList');
+  list.innerHTML = '<div class="menu-loading"><span class="loader"></span> Bringing the menu to your table…</div>';
+
+  try {
+    const { items } = await api.get(`/menu/items?${query}`);
+    document.getElementById('menuResultCount').textContent = `${items.length} ${items.length === 1 ? 'dish' : 'dishes'} to explore`;
+    if (!items.length) {
+      list.innerHTML = '<div class="menu-empty"><span>⌕</span><h3>Nothing on this plate just yet</h3><p>Try another category or search for a different dish.</p><button class="btn btn-outline-dark" type="button" data-clear-filter>Show all dishes</button></div>';
+      list.querySelector('[data-clear-filter]').addEventListener('click', () => {
+        activeCategory = '';
+        document.getElementById('searchInput').value = '';
+        renderCategoryFilters();
+        loadDishes();
+      });
+      return;
+    }
+    list.innerHTML = items.map(renderDish).join('');
+    list.querySelectorAll('[data-add-dish]').forEach((button) => button.addEventListener('click', () => {
+      const item = items.find((entry) => entry.id === button.dataset.addDish);
+      const select = list.querySelector(`[data-variant-select="${button.dataset.addDish}"]`);
+      const option = select.selectedOptions[0];
+      addToCart({
+        variantId: option.value,
+        itemName: item.name,
+        variantName: option.dataset.name,
+        unitPricePaise: Number(option.dataset.price)
+      });
+      button.classList.add('added');
+      button.innerHTML = 'Added <span aria-hidden="true">✓</span>';
+      window.setTimeout(() => {
+        button.classList.remove('added');
+        button.innerHTML = 'Add to order <span aria-hidden="true">+</span>';
+      }, 1100);
+    }));
+  } catch {
+    document.getElementById('menuResultCount').textContent = '';
+    list.innerHTML = '<div class="menu-empty"><h3>We couldn’t bring up the menu</h3><p>Please try again in a moment.</p><button class="btn btn-outline-dark" type="button" data-retry>Try again</button></div>';
+    list.querySelector('[data-retry]').addEventListener('click', loadDishes);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const response = await api.get('/menu/categories');
+    categories = response.categories;
+  } catch (error) {
+    console.error('Unable to load menu categories:', error);
+  }
+  renderCategoryFilters();
+  await loadDishes();
+  document.getElementById('searchInput').addEventListener('input', debounce(loadDishes, 280));
+  document.getElementById('sortSelect').addEventListener('change', loadDishes);
+});
+
+function debounce(fn, ms) {
+  let timer;
+  return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
+}
+</script>
+</body>
+</html>
