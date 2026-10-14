@@ -51,6 +51,9 @@ function createApp() {
   }));
   app.use(cors({ origin: config.corsOrigin, credentials: true }));
 
+  // This endpoint checks server responsiveness only; it does not check database health.
+  app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
   // Razorpay webhook needs the exact raw bytes for HMAC verification, so it's
   // parsed as raw *before* the general json() parser touches the body.
   app.use('/api/payments/webhook', express.raw({ type: 'application/json' }), (req, res, next) => {
